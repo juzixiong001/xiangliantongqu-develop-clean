@@ -234,7 +234,7 @@ const editForm = ref({
 })
 
 // 默认头像（静态头像）
-const defaultAvatar = 'https://via.placeholder.com/100x100?text=User'
+const defaultAvatar = '/avatars/avatar1.png'
 
 // 用户信息
 const userInfo = ref({
@@ -269,17 +269,16 @@ const loadUserInfo = async () => {
       return
     }
     
-    // 获取用户基本信息
-    try {
-      const userResponse = await getUserProfile()
+    // 先从localStorage获取用户信息（包含头像）
+    const storedUser = localStorage.getItem('user')
+    if (storedUser) {
       userInfo.value = {
-        ...userResponse,
+        ...JSON.parse(storedUser),
         publishedItems: [],
         favoriteItems: []
       }
-    } catch (err) {
-      console.error('获取用户基本信息失败:', err)
-      // 不显示错误信息，保持页面正常显示
+    } else {
+      // 如果localStorage中没有用户信息，使用默认值
       userInfo.value = {
         username: '',
         phone: '',
@@ -287,6 +286,22 @@ const loadUserInfo = async () => {
         publishedItems: [],
         favoriteItems: []
       }
+    }
+    
+    // 获取用户基本信息
+    try {
+      const userResponse = await getUserProfile()
+      // 保留本地存储的头像信息
+      userInfo.value = {
+        ...userResponse,
+        avatar: userInfo.value.avatar || userResponse.avatar,
+        publishedItems: [],
+        favoriteItems: []
+      }
+    } catch (err) {
+      console.error('获取用户基本信息失败:', err)
+      // 不显示错误信息，保持页面正常显示
+      // 不重置用户信息，保留本地存储的内容
     }
     
     // 获取我的发布

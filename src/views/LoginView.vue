@@ -127,8 +127,16 @@ const handleLogin = async () => {
       throw new Error('登录失败：未返回token')
     }
     
+    // 根据用户id计算头像索引，确保每个用户id对应唯一的头像
+    const userId = response.user.id || 1
+    const avatarIndex = (userId % 6) + 1
+    const userWithAvatar = {
+      ...response.user,
+      avatar: `/avatars/avatar${avatarIndex}.png`
+    }
+    
     localStorage.setItem('token', response.token)
-    localStorage.setItem('user', JSON.stringify(response.user))
+    localStorage.setItem('user', JSON.stringify(userWithAvatar))
     if (remember.value) {
       localStorage.setItem('rememberedUser', loginForm.value.username)
     } else {
