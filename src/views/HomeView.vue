@@ -35,13 +35,52 @@
       </div>
     </div>
     
+    <!-- 秒杀区域 -->
+<div class="seckill-section">
+  <div class="seckill-header">
+    <div class="seckill-title">
+      <span class="fire-icon">🔥</span>
+      <span>今日秒杀</span>
+    </div>
+    <div class="seckill-time">
+      <span class="time-label">14点场</span>
+      <div class="countdown">
+        <span class="time-block">{{ countdown.hours }}</span>
+        <span class="time-colon">:</span>
+        <span class="time-block">{{ countdown.minutes }}</span>
+        <span class="time-colon">:</span>
+        <span class="time-block">{{ countdown.seconds }}</span>
+      </div>
+      <a href="#" class="more-link">更多场次 ></a>
+    </div>
+  </div>
+
+  <div class="seckill-products">
+    <div class="product-card" v-for="product in seckillProducts" :key="product.id" @click="goToProduct(product.id)">
+      <div class="product-img">
+        <img :src="product.image" :alt="product.name">
+      </div>
+      <div class="product-info">
+        <h4 class="product-name">{{ product.name }}</h4>
+        <div class="product-price">
+          <span class="seckill-price">￥{{ product.seckillPrice }}</span>
+          <span class="original-price">￥{{ product.originalPrice }}</span>
+        </div>
+        <div class="product-sold">
+          <span>已售 {{ product.soldCount }}件</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>  <!-- 这个闭合标签应该在最后 -->
+
     <!-- 快捷入口卡片区 -->
 <div class="quick-entry">
   <h2>快捷入口</h2>
   <div class="entry-cards">
     <el-card @click="toPublish" class="entry-card">
       <div class="card-img-wrapper">
-        <img :src="sellImg" alt="卖东西" class="card-img">
+        <img v-lazy="sellImg" alt="卖东西" class="card-img">
       </div>
       <h3>我要卖东西</h3>
       <p>发布出售信息</p>
@@ -49,7 +88,7 @@
     
     <el-card @click="toBuy" class="entry-card">
       <div class="card-img-wrapper">
-        <img :src="buyImg" alt="买东西" class="card-img">
+        <img v-lazy="buyImg" alt="买东西" class="card-img">
       </div>
       <h3>我要买东西</h3>
       <p>浏览求购信息</p>
@@ -57,7 +96,7 @@
     
     <el-card @click="toEmployment" class="entry-card">
       <div class="card-img-wrapper">
-        <img :src="workImg" alt="找用工" class="card-img">
+        <img v-lazy="workImg" alt="找用工" class="card-img">
       </div>
       <h3>找用工/服务</h3>
       <p>查看用工信息</p>
@@ -65,21 +104,29 @@
     
     <el-card @click="toPolicyMatch" class="entry-card">
       <div class="card-img-wrapper">
-        <img :src="policyMatchImg" alt="政策匹配" class="card-img">
+        <img v-lazy="policyMatchImg" alt="政策匹配" class="card-img">
       </div>
       <h3>惠农政策匹配</h3>
       <p>精准匹配补贴</p>
     </el-card>
   </div>
 </div>
-    
+    <!-- AI辅助生成：DeepSeek网页版, 2026-4-19） -->
     <!-- 最新供需信息展示区 - 卡片轮播版 -->
     <div class="latest-info">
       <div class="container">
         <div class="section-header">
           <h2 class="section-title">最新供需信息</h2>
         </div>
-        <el-carousel :interval="4000" type="card" height="280px" :autoplay="true" :loop="true">
+
+        <el-carousel ref="carouselRef"
+          :interval="4000" 
+          type="card" 
+          height="280px" 
+          :autoplay="true" 
+          :loop="true"
+          @change="handleCarouselChange"
+        >
           <el-carousel-item v-for="item in latestItems" :key="item.id">
             <div class="info-card" @click="goToSupplyDetail(item.id)">
               <div class="info-image">
@@ -98,6 +145,16 @@
           </el-carousel-item>
         </el-carousel>
 
+        <div class="custom-dots">
+          <span 
+            v-for="(item, index) in latestItems" 
+            :key="index"
+            class="custom-dot"
+            :class="{ active: currentIndex === index }"
+            @click="setCurrentIndex(index)"
+          ></span>
+        </div>
+
         <div class="view-more">
           <el-button type="primary" @click="toSupplyDemand">查看全部供需 <el-icon><i-ep-arrow-right /></el-icon></el-button>
         </div>
@@ -112,6 +169,7 @@
           <h3>{{ policy.name }}</h3>
           <p class="amount">{{ policy.amount }}</p>
           <p class="condition">{{ policy.condition }}</p>
+          <div class="policy-arrow">→</div>
         </el-card>
       </div>
       <div class="policy-footer">
@@ -141,16 +199,28 @@
       <div class="footer-bottom">
         <p>© 2026 乡链通衢 版权所有</p>
       </div>
+      <div class="footer-social">
+        <i class="fab fa-weixin"></i>
+        <i class="fab fa-weibo"></i>
+        <i class="fab fa-tiktok"></i>
+      </div>
     </el-footer>
   </div>
+  <transition name="fade">
+  <div v-show="showBackTop" class="back-to-top" @click="scrollToTop">
+    ↑
+  </div>
+</transition>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
+/* AI辅助生成：DeepSeek网页版, 2026-4-19 */
 const router = useRouter()
 const activeIndex = ref('/')
+const showBackTop = ref(false)
 // 导入本地图片
 import potatoImg from '@/assets/images/home/potato.jpg'
 import appleImg from '@/assets/images/home/apple.jpg'
@@ -162,6 +232,12 @@ import sellImg from '@/assets/images/home/sell.jpg'
 import buyImg from '@/assets/images/home/buy.jpg'
 import workImg from '@/assets/images/home/work.jpg'
 import policyMatchImg from '@/assets/images/home/policy-match.jpg'
+
+// 导入秒杀商品图片（放在其他 import 后面）
+import eggImg from '@/assets/images/seckill/egg.jpg'
+import riceImg from '@/assets/images/seckill/rice.jpg'
+import fruitImg from '@/assets/images/seckill/fruit.jpg'
+import honeyImg from '@/assets/images/seckill/honey.jpg'
 
 // 获取供需图片
 const getSupplyImage = (item) => {
@@ -260,10 +336,122 @@ const handleMenuSelect = (key) => {
   activeIndex.value = key
   router.push(key)
 }
+
+const handleScroll = () => {
+  showBackTop.value = window.scrollY > 300
+}
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// 轮播图指示点相关
+const carouselRef = ref(null)
+const currentIndex = ref(0)
+
+const handleCarouselChange = (index) => {
+  currentIndex.value = index
+}
+
+const setCurrentIndex = (index) => {
+  carouselRef.value?.setActiveItem(index)
+}
+
+// --- 秒杀相关逻辑 ---
+const seckillProducts = ref([
+  {
+    id: 1,
+    name: '农家土鸡蛋',
+    seckillPrice: '1.60',
+    originalPrice: '2.35',
+    soldCount: 1247,
+    image: eggImg
+  },
+  {
+    id: 2,
+    name: '有机大米',
+    seckillPrice: '5.42',
+    originalPrice: '8.99',
+    soldCount: 856,
+    image: riceImg
+  },
+  {
+    id: 3,
+    name: '新鲜水果',
+    seckillPrice: '3.98',
+    originalPrice: '6.50',
+    soldCount: 2341,
+    image: fruitImg
+  },
+  {
+    id: 4,
+    name: '土蜂蜜',
+    seckillPrice: '12.80',
+    originalPrice: '25.00',
+    soldCount: 563,
+    image: honeyImg
+  }
+])
+
+// 倒计时逻辑
+const countdown = ref({
+  hours: '01',
+  minutes: '58',
+  seconds: '37'
+})
+
+let timer = null
+const startCountdown = () => {
+  let targetTime = new Date()
+  targetTime.setHours(14, 0, 0, 0)
+  
+  if (new Date() > targetTime) {
+    targetTime.setDate(targetTime.getDate() + 1)
+  }
+  
+  timer = setInterval(() => {
+    const now = new Date()
+    const diff = targetTime - now
+    
+    if (diff <= 0) {
+      clearInterval(timer)
+      countdown.value = { hours: '00', minutes: '00', seconds: '00' }
+      return
+    }
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const minutes = Math.floor((diff % (3600000)) / (1000 * 60))
+    const seconds = Math.floor((diff % (60000)) / 1000)
+    
+    countdown.value = {
+      hours: String(hours).padStart(2, '0'),
+      minutes: String(minutes).padStart(2, '0'),
+      seconds: String(seconds).padStart(2, '0')
+    }
+  }, 1000)
+}
+
+// 点击商品跳转到详情页
+const goToProduct = (id) => {
+  router.push(`/product-detail/${id}`)
+}
+
+// 页面加载时启动倒计时
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+  startCountdown()
+})
+
+// 组件卸载时清理定时器
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
+
 </script>
 
 <style scoped>
 
+/* AI辅助生成：DeepSeek网页版, 2026-4-2*/
 .header {
   display: flex;
   justify-content: space-between;
@@ -342,6 +530,7 @@ const handleMenuSelect = (key) => {
   width: auto;
 }
 
+/* AI辅助生成：DeepSeek网页版, 2026-4-19 */
 /* 卡片通用样式（轮播图和网格共用） */
 .info-card {
   background: white;
@@ -446,6 +635,7 @@ const handleMenuSelect = (key) => {
   gap: 4px;
 }
 
+/* AI辅助生成：DeepSeek网页版, 2026-4-2 */
 /* 查看更多按钮 - 和政策按钮一致 */
 .view-more {
   display: flex;
@@ -465,6 +655,40 @@ const handleMenuSelect = (key) => {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(46, 125, 50, 0.3);
 }
+
+.back-to-top {
+  position: fixed;
+  bottom: 80px;        /* 底部导航栏通常高度70-80px，放它上方 */
+  left: 50%;           /* 水平居中 */
+  transform: translateX(-50%);
+  width: 44px;
+  height: 44px;
+  background: #2e7d32;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: all 0.3s;
+  z-index: 1000;
+  font-size: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.back-to-top:hover {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-3px);
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .header {
@@ -483,8 +707,6 @@ const handleMenuSelect = (key) => {
     line-height: 56px;
   }
 }
-
-
 
 .banner {
   background: linear-gradient(135deg, #2e7d32 0%, #60ad5e 50%, #8bc34a 100%);
@@ -592,7 +814,8 @@ const handleMenuSelect = (key) => {
 }
 
 .entry-card:hover .card-img-wrapper {
-  transform: scale(1.02);
+  transform: scale(1.03);
+  box-shadow: 0 8px 20px rgba(46, 125, 50, 0.2);
 }
 
 /* 调整卡片内边距 */
@@ -681,6 +904,8 @@ const handleMenuSelect = (key) => {
 .info-item .time {
   color: #909399;
   font-size: 12px;
+  position: relative;
+  cursor: pointer;
 }
 
 .policy-cards {
@@ -695,11 +920,27 @@ const handleMenuSelect = (key) => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   padding: 20px;
   background-color: white;
+  position: relative;
+  cursor: pointer;
 }
 
 .policy-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.policy-arrow {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: #2e7d32;
+  font-size: 1.2rem;
+}
+
+.policy-card:hover .policy-arrow {
+  opacity: 1;
 }
 
 .policy-card h3 {
@@ -767,6 +1008,21 @@ const handleMenuSelect = (key) => {
 
 .footer-bottom p {
   margin: 0;
+}
+
+.footer-social {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+.footer-social i {
+  font-size: 24px;
+  color: #a5d6a7;
+  cursor: pointer;
+}
+.footer-social i:hover {
+  color: white;
 }
 
 /* ========== 乡村特色增强样式 ========== */
@@ -882,6 +1138,16 @@ const handleMenuSelect = (key) => {
   overflow: hidden;
 }
 
+/* 自定义指示点样式 */
+.el-carousel__dots {
+  position: static;
+  margin-top: 16px;
+}
+.el-carousel__dots .el-carousel__dot.is-active button {
+  background-color: #2e7d32;
+  width: 24px;
+}
+
 .info-item {
   height: 100%;
   display: flex;
@@ -890,6 +1156,7 @@ const handleMenuSelect = (key) => {
   border-radius: 20px;
 }
 
+ /* AI辅助生成：DeepSeek网页版, 2024-4-19） */
 /* 7. 页脚优化 - 绿色点缀版 */
 /* 页脚 - 与页面背景统一 */
 .footer {
@@ -961,6 +1228,209 @@ const handleMenuSelect = (key) => {
   letter-spacing: 8px;
 }
 
+.custom-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+.custom-dot {
+  width: 8px;
+  height: 8px;
+  background: #ddd;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.custom-dot.active {
+  width: 24px;
+  background: #2e7d32;
+  border-radius: 4px;
+}
+
+/* 秒杀区域样式 - 绿色主题 */
+.seckill-section {
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  padding: 0 0;
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(46, 125, 50, 0.1);
+}
+
+.seckill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #2e7d32, #43a047);
+  color: white;
+  border-radius: 28px 28px 0 0;  /* 只有顶部圆角 */
+}
+
+.seckill-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.fire-icon {
+  font-size: 28px;
+}
+
+.seckill-time {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.time-label {
+  font-size: 16px;
+  font-weight: 500;
+  background: rgba(255,255,255,0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.countdown {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: monospace;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.time-block {
+  background: #1b5e20;
+  padding: 6px 10px;
+  border-radius: 8px;
+  min-width: 48px;
+  text-align: center;
+}
+
+.time-colon {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.more-link {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 20px;
+  transition: all 0.3s;
+}
+
+.more-link:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.seckill-products {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 24px;
+}
+
+.product-card {
+  text-align: left;  /* 改为左对齐 */
+  cursor: pointer;
+  transition: all 0.3s;
+  background: white;
+  border-radius: 20px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid rgba(46, 125, 50, 0.1);
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(46, 125, 50, 0.15);
+}
+
+.product-img {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 16px;
+  margin-bottom: 10px;
+}
+
+.product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.seckill-price {
+  color: #2e7d32;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.original-price {
+  color: #999;
+  font-size: 12px;
+  text-decoration: line-through;
+}
+
+.product-sold {
+  font-size: 10px;
+  color: #999;
+}
+
+.product-sold span {
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+  .seckill-header {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .seckill-products {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+  
+  .seckill-title {
+    font-size: 20px;
+  }
+  
+  .time-block {
+    min-width: 40px;
+    padding: 4px 8px;
+    font-size: 16px;
+  }
+}
 
 /* 响应式布局 */
 @keyframes bannerPulse {
@@ -1028,6 +1498,5 @@ const handleMenuSelect = (key) => {
   overflow: hidden;
   height: 56px;
 }
-
 
 </style>

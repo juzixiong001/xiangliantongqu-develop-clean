@@ -17,5 +17,5 @@ export function batchRemoveFavorites(ids) {
 
 // 获取我的收藏列表
 export function getMyFavorites() {
-  return request.get('/favorites/my');
+  return request.get('/user/favorites');
 }

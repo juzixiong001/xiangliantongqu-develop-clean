@@ -13,13 +13,13 @@
       <!-- 左侧插画区 -->
       <div class="illustration">
         <div class="illustration-inner">
-          <div class="farmer-illustration">🌱</div>
+          <img src="@/assets/images/register.jpg" class="farmer-illustration-img" alt="种子发芽" />
           <h3>加入乡链通衢</h3>
           <p>开启乡村互联之旅</p>
           <div class="small-icons">
-            <span>🌾</span>
-            <span>🚜</span>
-            <span>🍎</span>
+            <span>🌱</span>
+            <span>💧</span>
+            <span>🌿</span>
           </div>
         </div>
       </div>
@@ -84,7 +84,7 @@
             size="large"
             class="register-btn"
           >
-            注册
+            🌱注册
           </el-button>
           <div class="login-prompt">
             已有账号？<a href="#" @click.prevent="goToLogin">立即登录</a>
@@ -189,12 +189,24 @@ const goToLogin = () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;  /* 改为 flex-start，不要居中 */
   align-items: center;
   position: relative;
-  background: #F5F7F0;
+  background: url('@/assets/images/bg.jpg') no-repeat center center fixed;
+  background-size: cover;
   font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
   overflow: hidden;
+}
+
+.register-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(245, 247, 240, 0.85);
+  z-index: 0;
 }
 
 /* 背景装饰 - 麦浪线条（绿色调） */
@@ -234,6 +246,8 @@ const goToLogin = () => {
 
 /* 注册卡片 - 左右布局 */
 .register-card {
+  margin-top: 60px;      /* 新增：控制顶部间距 */
+  margin-bottom: 40px;   /* 新增：与 footer 的间距 */
   display: flex;
   width: 900px;
   max-width: 90vw;
@@ -243,11 +257,17 @@ const goToLogin = () => {
   overflow: hidden;
   z-index: 2;
   transition: transform 0.3s ease;
-  min-height: 580px;
 }
 
 .register-card:hover {
   transform: translateY(-5px);
+}
+
+/* 让卡片和底部内容在遮罩上面 */
+.register-card,
+.footer {
+  position: relative;
+  z-index: 1;
 }
 
 /* 左侧插画区 - 绿色渐变 */
@@ -269,6 +289,16 @@ const goToLogin = () => {
   font-size: 80px;
   margin-bottom: 20px;
   animation: float 3s ease-in-out infinite;
+}
+
+.farmer-illustration-img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 24px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  animation: float 3s ease-in-out infinite;
+  margin-bottom: 16px;
 }
 
 @keyframes float {

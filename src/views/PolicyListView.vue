@@ -370,7 +370,10 @@ const toggleFavorite = async (policy) => {
       policy.favoriteId = null
       ElMessage.success('已取消收藏')
     } else {
-      const res = await addFavorite({ targetId: policy.id, type: 'policy' })
+      const res = await addFavorite({
+        targetType: 'policy',
+        targetId: policy.id
+      })
       policy.isFavorited = true
       policy.favoriteId = res.id   // 根据后端返回的实际字段名调整
       ElMessage.success('收藏成功')

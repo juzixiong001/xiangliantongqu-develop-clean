@@ -15,7 +15,7 @@
         <div class="detail-content">
           <div class="detail-item">
             <span class="label">地区：</span>
-            <span class="value">{{ supply.area }}</span>
+            <span class="value">{{ supply.province || '' }} {{ supply.city || '' }} {{ supply.areaDetail || supply.area || '' }}</span>
           </div>
           <div class="detail-item">
             <span class="label">描述：</span>

@@ -62,6 +62,11 @@ const router = createRouter({
       name: 'user-publish',
       component: () => import('../views/UserPublishView.vue'),
     },
+    {
+    path: '/product-detail/:id',
+    name: 'product-detail',
+    component: () => import('@/views/ProductDetail.vue')
+    },
   ],
 })
 

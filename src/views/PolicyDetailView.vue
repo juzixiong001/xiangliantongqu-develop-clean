@@ -15,9 +15,14 @@
         <template #header>
           <div class="card-header">
             <h2 class="title">{{ policyInfo.name }}</h2>
-            <el-tag type="primary" effect="dark" size="large" class="amount-tag">
-              补贴金额：{{ policyInfo.amount }}
-            </el-tag>
+            <div class="header-actions">
+              <el-icon class="favorite-icon" @click="toggleFavorite" :class="{ favorited: isFavorited }">
+                <i-ep-star />
+              </el-icon>
+              <el-tag type="primary" effect="dark" size="large" class="amount-tag">
+                补贴金额：{{ policyInfo.amount }}
+              </el-tag>
+            </div>
           </div>
         </template>
         
@@ -74,6 +79,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
+import { addFavorite, removeFavorite, getMyFavorites } from '@/api/favorite'
+import { ElMessage } from 'element-plus' 
 
 const route = useRoute()
 const router = useRouter()
@@ -104,17 +111,57 @@ const policyInfo = ref({
   contact: '咨询电话：12316'
 })
 
+// 收藏状态
+const isFavorited = ref(false)
+let favoriteId = null
+
 // 返回上一页
 const goBack = () => {
   router.back()
 }
 
+// 切换收藏
+// 切换收藏
+const toggleFavorite = async () => {
+  try {
+    if (isFavorited.value) {
+      await removeFavorite(favoriteId)
+      isFavorited.value = false
+      favoriteId = null
+      ElMessage.success('已取消收藏')
+    } else {
+      const res = await addFavorite({
+        targetType: 'policy',
+        targetId: policyInfo.value.id
+      })
+      isFavorited.value = true
+      favoriteId = res.id
+      ElMessage.success('收藏成功')
+    }
+  } catch (error) {
+    console.error('收藏操作失败', error)
+    ElMessage.error('操作失败，请重试')
+  }
+}
+
 // 模拟加载数据
-onMounted(() => {
+onMounted(async () => {
   const id = route.params.id
-  if (id) {
-    // 这里可以根据ID从API获取数据
-    console.log('Loading policy info with ID:', id)
+  // TODO: 替换为真实的 getPolicyDetail(id) 调用
+  // 这里暂时保留原始模拟数据，但需要设置 policyInfo.value.id = id
+  policyInfo.value.id = Number(id)
+  
+  // 检查收藏状态
+  try {
+    const favRes = await getMyFavorites()
+    const list = favRes.list || []
+    const found = list.find(item => item.post?.id == id) 
+    if (found) {
+      isFavorited.value = true
+      favoriteId = found.favoriteId 
+    }
+  } catch (err) {
+    console.error('检查收藏状态失败', err)
   }
 })
 </script>
@@ -220,6 +267,7 @@ onMounted(() => {
   margin: 0;
 }
 
+ /* AI辅助生成：DeepSeek网页版, 2026-4-19） */
 .amount-tag {
   background-color: #2e7d32 !important;  /* 改成绿色 */
   border-color: #2e7d32 !important;
@@ -307,6 +355,31 @@ onMounted(() => {
   
   .amount {
     font-size: 20px;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .favorite-icon {
+    font-size: 28px;
+    cursor: pointer;
+    margin-right: 12px;
+    display: inline-block !important;
+    color: #ccc;
+    transition: transform 0.2s, color 0.2s;
+  }
+  .favorite-icon.favorited {
+    color: #ff8f00;
+  }
+  .favorite-icon:hover {
+    transform: scale(1.1);
   }
 }
 </style>

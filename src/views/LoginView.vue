@@ -8,17 +8,24 @@
       <div class="glow"></div>
     </div>
 
+    <!-- 稻田波浪装饰 -->
+    <div class="rice-wave">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 80" style="display: block; width: 100%;">
+        <path fill="#d4e6c9" fill-opacity="0.5" d="M0,32L80,42.7C160,53,320,75,480,74.7C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"/>
+      </svg>
+    </div>
+
     <!-- 登录卡片 -->
     <div class="login-card">
       <!-- 左侧插画区（隐藏于移动端） -->
       <div class="illustration">
         <div class="illustration-inner">
-          <div class="farmer-illustration">🌾</div>
+          <img src="@/assets/images/login.jpg" class="farmer-illustration-img" alt="丰收小麦" />
           <h3>乡链通衢</h3>
           <p>连接乡村 · 共享机遇</p>
           <div class="small-icons">
-            <span>🌱</span>
-            <span>🚜</span>
+            <span>🌾</span>
+            <span>🌽</span>
             <span>🍎</span>
           </div>
         </div>
@@ -64,7 +71,7 @@
             size="large"
             class="login-btn"
           >
-            登录
+            <span>🌾 登录</span>
           </el-button>
           <div class="register-prompt">
             还没有账号？<a href="#" @click.prevent="goToRegister">立即注册</a>
@@ -134,7 +141,6 @@ const handleLogin = async () => {
       ...response.user,
       avatar: `/avatars/avatar${avatarIndex}.png`
     }
-    
     localStorage.setItem('token', response.token)
     localStorage.setItem('user', JSON.stringify(userWithAvatar))
     if (remember.value) {
@@ -170,12 +176,33 @@ if (rememberedUser) {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   position: relative;
-  background: #F5F7F0;  
+  background: url('@/assets/images/bg.jpg') no-repeat center center fixed;
+  background-size: cover;
   font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
   overflow: hidden;
+}
+
+/* 半透明遮罩层，保证文字可读 */
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(245, 247, 240, 0.85);
+  z-index: 0;
+}
+
+/* 让卡片和底部内容在遮罩上面 */
+.login-card,
+.footer,
+.rice-wave-footer {
+  position: relative;
+  z-index: 1;
 }
 
 /* 背景装饰 - 麦浪线条 */
@@ -218,6 +245,8 @@ if (rememberedUser) {
 .login-card {
   display: flex;
   width: 900px;
+  margin-top: 60px;      /* 控制顶部距离 */
+  margin-bottom: 40px;  /* 与 footer 的间距 */
   max-width: 90vw;
   background: white;
   border-radius: 32px;
@@ -251,6 +280,16 @@ if (rememberedUser) {
   font-size: 80px;
   margin-bottom: 20px;
   animation: float 3s ease-in-out infinite;
+}
+
+.farmer-illustration-img {
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 24px;
+  margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
 }
 
 @keyframes float {
@@ -363,7 +402,7 @@ if (rememberedUser) {
 .login-btn:hover {
   background: linear-gradient(135deg, #66bb6a, #1b5e20);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(201, 126, 44, 0.3);
+  box-shadow: 0 8px 20px rgba(46, 125, 50, 0.3);
 }
 
 .register-prompt {
@@ -440,9 +479,21 @@ if (rememberedUser) {
 /* 页脚 */
 .footer {
   margin-top: 40px;
+  margin-bottom: 100px;
   font-size: 12px;
-  color: #81c784;
+  color: #366438;
   z-index: 2;
+  width: 100%;
+  text-align: center;
+}
+
+.rice-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* 响应式 */
@@ -458,6 +509,9 @@ if (rememberedUser) {
   }
   .form-header h2 {
     font-size: 24px;
+  }
+  .rice-wave {
+    display: none;
   }
 }
 </style>

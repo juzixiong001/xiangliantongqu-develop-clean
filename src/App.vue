@@ -2,6 +2,8 @@
   <div id="app">
     <router-view />
     
+    <ChatBot />
+
     <!-- 底部导航栏 -->
     <div class="tab-bar">
       <div 
@@ -43,6 +45,7 @@
 <script setup>
 import { useFontSize } from '@/composables/useFontSize'
 import { useRouter } from 'vue-router'
+import ChatBot from '@/components/ChatBot.vue'
 
 const { toggleFontSize } = useFontSize()
 const router = useRouter()
@@ -87,7 +90,7 @@ body {
 
 #app {
   min-height: 100vh;
-  padding-bottom: 80px;
+  /* padding-bottom: 80px; */
 }
 
 /* 底部导航栏 */
@@ -96,14 +99,15 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;           /* 确保占满全宽 */
+  max-width: 100%;       /* 去掉最大宽度限制 */
   display: flex;
-  background: white;
-  border-top: 1px solid #e8e8e8;
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(100, 150, 100, 0.3);
   padding: 12px 0 20px;
   z-index: 100;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
 }
 
 .tab-item {
@@ -113,7 +117,7 @@ body {
   align-items: center;
   gap: 6px;
   font-size: 14px;
-  color: #999;
+  color: #5c6e5a;
   cursor: pointer;
   transition: color 0.2s;
 }
@@ -132,7 +136,7 @@ body {
 }
 
 .tab-item:hover {
-  color: #2e7d32 !important;
+  color: #4caf50 !important;
 }
 
 /* 移动端适配 */

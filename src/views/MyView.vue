@@ -140,7 +140,7 @@
               <div class="favorite-content">{{ item.content || item.description }}</div>
               <div class="favorite-footer">
                 <el-button type="primary" size="small" @click="viewItem(item)">查看</el-button>
-                <el-button type="danger" size="small" @click="removeFavoriteItem(item.id, item.type)">取消收藏</el-button>
+                <el-button type="danger" size="small" @click="removeFavoriteItem(item)">取消收藏</el-button>
               </div>
             </div>
           </div>
@@ -234,7 +234,7 @@ const editForm = ref({
 })
 
 // 默认头像（静态头像）
-const defaultAvatar = '/avatars/avatar1.png'
+const defaultAvatar = 'https://via.placeholder.com/100x100?text=User'
 
 // 用户信息
 const userInfo = ref({
@@ -269,32 +269,11 @@ const loadUserInfo = async () => {
       return
     }
     
-    // 先从localStorage获取用户信息（包含头像）
-    const storedUser = localStorage.getItem('user')
-    if (storedUser) {
-      userInfo.value = {
-        ...JSON.parse(storedUser),
-        publishedItems: [],
-        favoriteItems: []
-      }
-    } else {
-      // 如果localStorage中没有用户信息，使用默认值
-      userInfo.value = {
-        username: '',
-        phone: '',
-        avatar: '',
-        publishedItems: [],
-        favoriteItems: []
-      }
-    }
-    
     // 获取用户基本信息
     try {
       const userResponse = await getUserProfile()
-      // 保留本地存储的头像信息
       userInfo.value = {
         ...userResponse,
-        avatar: userInfo.value.avatar || userResponse.avatar,
         publishedItems: [],
         favoriteItems: []
       }
@@ -318,10 +297,19 @@ const loadUserInfo = async () => {
     // 获取我的收藏
     try {
       const favoriteResponse = await getMyFavorites()
-      userInfo.value.favoriteItems = favoriteResponse.list || []
+      const rawList = favoriteResponse.list || []
+      // ✅ 关键修复：不要默认设为 policy，直接取后端返回的类型
+      userInfo.value.favoriteItems = rawList.map(item => ({
+        ...item,
+        title: item.post?.title || item.title,
+        content: item.post?.content || item.content,
+        // 重要：这里用 item.post?.type || item.type，不要强制 'policy'
+        type: item.post?.type || item.type,
+        id: item.post?.id || item.id,
+        favoriteId: item.id
+      }))
     } catch (err) {
       console.error('加载我的收藏失败:', err)
-      // 不显示错误信息，避免干扰用户
       userInfo.value.favoriteItems = []
     }
     userStats.value.favorites = userInfo.value.favoriteItems.length
@@ -395,7 +383,6 @@ const viewItem = (item) => {
     router.push(`/supply-detail/${item.id}`)
   }
 }
-
 // 编辑发布内容
 const editItem = (item) => {
   router.push(`/publish?id=${item.id}`)
@@ -423,10 +410,10 @@ const deleteItem = async (id) => {
 }
 
 // 取消收藏
-const removeFavoriteItem = async (id, type) => {
+const removeFavoriteItem = async (item) => {
   try {
-    await removeFavorite(id)
-    userInfo.value.favoriteItems = userInfo.value.favoriteItems.filter(item => item.id !== id)
+    await removeFavorite(item.favoriteId)  
+    userInfo.value.favoriteItems = userInfo.value.favoriteItems.filter(i => i.favoriteId !== item.favoriteId)
     userStats.value.favorites = userInfo.value.favoriteItems.length
     ElMessage.success('取消收藏成功')
   } catch (error) {

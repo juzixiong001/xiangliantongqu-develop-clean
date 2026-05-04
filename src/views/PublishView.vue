@@ -12,6 +12,7 @@
     <el-main>
       <div class="publish-form-container">
         <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
+          
           <el-form-item label="标题" prop="title">
             <el-input v-model="form.title" placeholder="请输入标题" />
           </el-form-item>
@@ -22,15 +23,18 @@
               <el-option label="用工" value="需求" />
             </el-select>
           </el-form-item>
+          
           <el-form-item label="内容" prop="content">
             <el-input v-model="form.content" type="textarea" rows="4" placeholder="请输入详细描述" />
           </el-form-item>
+
           <el-form-item label="价格（元）" prop="price">
             <el-input v-model="form.price" placeholder="请输入价格" />
           </el-form-item>
           <el-form-item label="联系电话" prop="contact">
             <el-input v-model="form.contact" placeholder="请输入联系电话" />
           </el-form-item>
+
           <el-form-item label="所在地区" prop="area">
             <el-row :gutter="10">
               <el-col :span="8">
@@ -50,6 +54,7 @@
               </el-col>
             </el-row>
           </el-form-item>
+
           <el-form-item label="图片">
             <el-upload
               class="upload-demo"
@@ -73,6 +78,7 @@
               </div>
             </div>
           </el-form-item>
+
           <el-form-item>
             <el-button type="primary" @click="submitForm" :loading="submitting">提交</el-button>
             <el-button @click="resetForm">重置</el-button>
@@ -243,6 +249,7 @@ const resetForm = () => {
   border: 1px solid #ddd;
 }
 
+/* AI辅助生成：DeepSeek网页版, 2026-4-19 */
 /* ========== 强制修复返回按钮样式 ========== */
 .return-btn,
 .return-btn:focus,
